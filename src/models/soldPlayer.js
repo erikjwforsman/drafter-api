@@ -5,6 +5,8 @@ const schema = new mongoose.Schema({
 	nflTeam: String,
 	position: String,
 	price: Number,
+	oldId: String,
+	bye: Number,
 	owner: {
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "Team"

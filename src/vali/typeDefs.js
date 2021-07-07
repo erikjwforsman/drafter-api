@@ -23,6 +23,8 @@ const typeDefs = gql`
         position: String!
         owner: Team
         price: Int!
+        bye: Int!
+        oldId: String!
         id:ID!
     }
 
@@ -52,6 +54,8 @@ const typeDefs = gql`
             position: String!
             price: Int!
             owner: String!
+            oldId: String!
+            bye: Int!
         ):SoldPlayer
     }
 `;

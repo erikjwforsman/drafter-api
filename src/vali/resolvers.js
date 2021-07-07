@@ -51,6 +51,8 @@ const resolvers = {
 				nflTeam: args.nflTeam,
 				position: args.position,
 				price: args.price,
+				oldId: args.oldId,
+				bye: args.bye
 			});
 
 			soldPlayer.save();
