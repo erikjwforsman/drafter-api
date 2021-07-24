@@ -28,10 +28,23 @@ const typeDefs = gql`
         id:ID!
     }
 
+    type Bid {
+        bidder: String!,
+        player: Player!
+        currentPrice: Int!,
+        timeLeft: Int!
+    }
+
+    type Turn{
+        proposer: String!
+    }
+
     type Query{
         allPlayers: [Player!]!
         allTeams: [Team]
         allSoldPlayers: [SoldPlayer!]!
+        lastProposer: Turn
+        currentBid: Bid
     }
 
     type Mutation{
@@ -57,7 +70,19 @@ const typeDefs = gql`
             oldId: String!
             bye: Int!
         ):SoldPlayer
+
+        changeProposer(
+            newProposer: String!
+        ):Turn
+
+        changeBid(
+            bidder: String
+            playerId: String
+            currentPrice: Int
+            timeLeft: Int
+        ):Bid
     }
+    
 `;
 
 module.exports = typeDefs;
@@ -89,5 +114,9 @@ module.exports = typeDefs;
             price: Int!
         ):SoldPlayer
 
+
+        changeTurn(
+            currentProposer: String!
+        ):Turn
        
 */}

@@ -3,13 +3,17 @@
 const Player = require("../models/player");
 const SoldPlayer = require("../models/soldPlayer");
 const Team = require("../models/team");
+const Turn = require("../models/turn");
+const Bid = require("../models/bid");
 
 const resolvers = {
 	Query: {
 		allPlayers: () => Player.find({}),
 		// eslint-disable-next-line no-unused-vars
 		allTeams: async (root, args) => Team.find({}).populate("players"),
-		allSoldPlayers: () => SoldPlayer.find({})
+		allSoldPlayers: () => SoldPlayer.find({}),
+		lastProposer: () => Turn.findOne(),
+		currentBid: () => Bid.findOne() //Rakennetaan vielä pelaajan tulostus
 	},
 
 	Team: {
@@ -60,6 +64,38 @@ const resolvers = {
 			buyer.players.push(soldPlayer);
 			return buyer.save();
             
+		},
+		changeProposer: async(root, args) => {
+			let current = await Turn.findOne();
+			if(current === null){
+				const firstProposer = new Turn ({
+					proposer: args.newProposer
+				});
+				return firstProposer.save();
+			}
+
+			return Turn.findByIdAndUpdate(current._id, {proposer: args.newProposer});
+		},
+		changeBid: async(root, args) => {
+			let current = await Bid.findOne();
+			if(current === null){
+				const biddedPlayer = new Bid({
+					bidder: args.bidder,
+					player: await Player.findOne({_id:args.playerId}),
+					currentPrice: 1,
+					timeLeft: Date.now()+30000
+				});
+				return biddedPlayer.save();
+			}
+			//Nostaa ajan tarjouksen jälkeen 10 sekuntiin, jos olisi muuten alle
+			let newTime = current.timeLeft;
+			if (newTime-Date.now()<10000){
+				console.log("Kiirettä pitää, Nostetaan kymppiin");
+				newTime=Date.now()+10000;
+			}
+			// let newTimeLeft = Date.now()+12345;
+			// console.log("Ajan tsekkaus",newTimeLeft); 
+			return Bid.findByIdAndUpdate(current._id, {bidder: args.bidder, currentPrice: args.currentPrice, timeLeft:newTime});
 		}
 	}
 };
