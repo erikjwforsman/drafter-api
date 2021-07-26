@@ -7,7 +7,7 @@ const schema = new mongoose.Schema({
 		ref: "Player"
 	},
 	currentPrice: Number,
-	timeLeft: Number
+	timeLeft: String //Eka
 });
 
 module.exports = mongoose.model("Bid", schema);

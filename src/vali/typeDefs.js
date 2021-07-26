@@ -32,7 +32,7 @@ const typeDefs = gql`
         bidder: String!,
         player: Player!
         currentPrice: Int!,
-        timeLeft: Int!
+        timeLeft: String!
     }
 
     type Turn{
@@ -79,7 +79,7 @@ const typeDefs = gql`
             bidder: String
             playerId: String
             currentPrice: Int
-            timeLeft: Int
+            timeLeft: String
         ):Bid
     }
     

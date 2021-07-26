@@ -29,6 +29,13 @@ const resolvers = {
 		}
 	},
 
+	Bid: {
+		player: async(root) => {
+			//const retPlayer = await Player.findOne({_id:root.player});//
+			return await Player.findOne({_id:root.player}); 
+		}
+	},
+
 	Mutation: {
 		addPlayer: async(root, args) => {
 			const player = new Player({
@@ -78,24 +85,37 @@ const resolvers = {
 		},
 		changeBid: async(root, args) => {
 			let current = await Bid.findOne();
+			//Huutokaupan ensimmäinen tarjous
 			if(current === null){
+				
 				const biddedPlayer = new Bid({
 					bidder: args.bidder,
 					player: await Player.findOne({_id:args.playerId}),
 					currentPrice: 1,
-					timeLeft: Date.now()+30000
+					timeLeft: String(Date.now()+30000)
 				});
 				return biddedPlayer.save();
 			}
+			
+			//Tarjoaminen uudesta pelaajasta alkaa
+			if( String(current.player)!==args.playerId ){ //Current palaa objectina, ongelma?
+				const player = await Player.findOne({_id:args.playerId});
+				
+				console.log("aktiivinen");
+				return Bid.findByIdAndUpdate(current._id, { bidder: args.bidder, currentPrice: 1, timeLeft:String(Date.now()+30000), player:player } );
+			} 
 			//Nostaa ajan tarjouksen jälkeen 10 sekuntiin, jos olisi muuten alle
-			let newTime = current.timeLeft;
+			let newTime = Number(current.timeLeft);
 			if (newTime-Date.now()<10000){
 				console.log("Kiirettä pitää, Nostetaan kymppiin");
 				newTime=Date.now()+10000;
 			}
-			// let newTimeLeft = Date.now()+12345;
-			// console.log("Ajan tsekkaus",newTimeLeft); 
-			return Bid.findByIdAndUpdate(current._id, {bidder: args.bidder, currentPrice: args.currentPrice, timeLeft:newTime});
+
+			//
+			//PITÄÄKÖ TEHDÄ ERILLINEN NULLAUS??
+			//
+			
+			return Bid.findByIdAndUpdate(current._id, {bidder: args.bidder, currentPrice: args.currentPrice, timeLeft:String(newTime)});
 		}
 	}
 };
