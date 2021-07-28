@@ -50,7 +50,8 @@ const resolvers = {
 		},
 		addTeam: async(root, args) => {
 			const team = new Team({
-				owner: args.owner
+				owner: args.owner,
+				place: args.place
 			});
 			return team.save();
 		},
@@ -72,16 +73,39 @@ const resolvers = {
 			return buyer.save();
             
 		},
-		changeProposer: async(root, args) => {
+		changeProposer: async() => { //Pitääkö olla root?
 			let current = await Turn.findOne();
+			const teams = await Team.find({});
+
 			if(current === null){
 				const firstProposer = new Turn ({
-					proposer: args.newProposer
+					proposer: 1
 				});
 				return firstProposer.save();
-			}
+			} 
+			//Saa luvun, josta selvitetään kelpoisuus
+			const isOk = (luku) =>{
+				let target = luku<4 ? luku+1 : 1;	//targetin pitää olla joukkueiden määrä-1
+				while(target<6){
+					const team = teams.filter(t => t.place===target);
+					if(team[0].players.length<2){		//Tähän joukkueiden maksimirosterikoko
+						break;
+					}
+					target = target<4 ? target+1 : 1; //targetin pitää olla joukkueiden määrä-1
+				}
+				return(target);
 
-			return Turn.findByIdAndUpdate(current._id, {proposer: args.newProposer});
+			};
+			const thisWillBeSaved = isOk(current.proposer);
+
+			if (thisWillBeSaved<5){				//Tähän joukkueiden määrä+1
+				const next = thisWillBeSaved;
+
+				return Turn.findByIdAndUpdate(current._id, {proposer: next});
+			} 
+			return Turn.findByIdAndUpdate(current._id, {proposer: 1});
+			
+			
 		},
 		changeBid: async(root, args) => {
 			let current = await Bid.findOne();

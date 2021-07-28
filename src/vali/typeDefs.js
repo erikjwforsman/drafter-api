@@ -13,6 +13,7 @@ const typeDefs = gql`
 
     type Team {
         owner: String!
+        place: Int
         players: [SoldPlayer]
         id:ID!
     }
@@ -36,7 +37,7 @@ const typeDefs = gql`
     }
 
     type Turn{
-        proposer: String!
+        proposer: Int!
     }
 
     type Query{
@@ -59,6 +60,7 @@ const typeDefs = gql`
 
         addTeam(
             owner: String!
+            place: Int
         ):Team
 
         addSoldPlayer(
@@ -71,9 +73,7 @@ const typeDefs = gql`
             bye: Int!
         ):SoldPlayer
 
-        changeProposer(
-            newProposer: String!
-        ):Turn
+        changeProposer:Turn
 
         changeBid(
             bidder: String

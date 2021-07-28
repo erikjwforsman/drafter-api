@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const schema = new mongoose.Schema({
-	proposer: String
+	proposer: Number
 });
 
 module.exports = mongoose.model("Turn", schema);
