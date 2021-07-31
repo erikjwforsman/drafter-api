@@ -46,7 +46,8 @@ const resolvers = {
 				position: args.position,
 				bye: args.bye
 			});
-			return player.save();
+			player.save();
+			return player;
 		},
 		addTeam: async(root, args) => {
 			const team = new Team({
@@ -67,13 +68,18 @@ const resolvers = {
 				bye: args.bye
 			});
 
-			soldPlayer.save();
+			await soldPlayer.save();
 
 			buyer.players.push(soldPlayer);
-			return buyer.save();
+			// return buyer.save(); testi alkaa
+			buyer.save();
+			return soldPlayer;
             
 		},
-		changeProposer: async() => { //Pitääkö olla root?
+		changeProposer: async(root, args) => { //Pitääkö olla root?
+			if (args){
+				console.log(args);
+			}
 			let current = await Turn.findOne();
 			const teams = await Team.find({});
 
@@ -85,29 +91,31 @@ const resolvers = {
 			} 
 			//Saa luvun, josta selvitetään kelpoisuus
 			const isOk = (luku) =>{
-				let target = luku<4 ? luku+1 : 1;	//targetin pitää olla joukkueiden määrä-1
-				while(target<6){
+				let target = luku<10 ? luku+1 : 1;	//targetin pitää olla joukkueiden määrä-1
+				while(target<20){	//Luku vapaa kunhan enemmän kuin joukkueiden määrä
 					const team = teams.filter(t => t.place===target);
 					if(team[0].players.length<2){		//Tähän joukkueiden maksimirosterikoko
 						break;
 					}
-					target = target<4 ? target+1 : 1; //targetin pitää olla joukkueiden määrä-1
+					target = target<10 ? target+1 : 1; //targetin pitää olla joukkueiden määrä-1
 				}
 				return(target);
 
 			};
 			const thisWillBeSaved = isOk(current.proposer);
 
-			if (thisWillBeSaved<5){				//Tähän joukkueiden määrä+1
+			if (thisWillBeSaved<11){				//Tähän joukkueiden määrä+1
 				const next = thisWillBeSaved;
 
 				return Turn.findByIdAndUpdate(current._id, {proposer: next});
 			} 
+			//console.log()
 			return Turn.findByIdAndUpdate(current._id, {proposer: 1});
 			
 			
 		},
 		changeBid: async(root, args) => {
+			console.log("ALKAAAA");
 			let current = await Bid.findOne();
 			//Huutokaupan ensimmäinen tarjous
 			if(current === null){
@@ -128,6 +136,13 @@ const resolvers = {
 				console.log("aktiivinen");
 				return Bid.findByIdAndUpdate(current._id, { bidder: args.bidder, currentPrice: 1, timeLeft:String(Date.now()+30000), player:player } );
 			} 
+			
+
+			//
+			//PITÄÄKÖ TEHDÄ ERILLINEN NULLAUS??
+			//
+			
+			//Jo myynnissä oleva pelaaja
 			//Nostaa ajan tarjouksen jälkeen 10 sekuntiin, jos olisi muuten alle
 			let newTime = Number(current.timeLeft);
 			if (newTime-Date.now()<10000){
@@ -135,11 +150,9 @@ const resolvers = {
 				newTime=Date.now()+10000;
 			}
 
-			//
-			//PITÄÄKÖ TEHDÄ ERILLINEN NULLAUS??
-			//
-			
-			return Bid.findByIdAndUpdate(current._id, {bidder: args.bidder, currentPrice: args.currentPrice, timeLeft:String(newTime)});
+			await Bid.findByIdAndUpdate(current._id, {bidder: args.bidder, currentPrice: args.currentPrice, timeLeft:String(newTime)});
+			console.log(current);
+			return current;	//vaihda takaisin Bid.findBy... palautukseen
 		}
 	}
 };

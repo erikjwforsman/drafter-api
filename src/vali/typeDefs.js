@@ -32,8 +32,8 @@ const typeDefs = gql`
     type Bid {
         bidder: String!,
         player: Player!
-        currentPrice: Int!,
-        timeLeft: String!
+        currentPrice: Int,
+        timeLeft: String
     }
 
     type Turn{
@@ -73,11 +73,13 @@ const typeDefs = gql`
             bye: Int!
         ):SoldPlayer
 
-        changeProposer:Turn
+        changeProposer(
+            current: Int
+        ):Turn
 
         changeBid(
-            bidder: String
-            playerId: String
+            bidder: String!
+            playerId: String!
             currentPrice: Int
             timeLeft: String
         ):Bid
