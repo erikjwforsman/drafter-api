@@ -77,6 +77,8 @@ const resolvers = {
             
 		},
 		changeProposer: async(root, args) => { //Pitääkö olla root?
+			
+
 			if (args){
 				console.log(args);
 			}
@@ -89,22 +91,24 @@ const resolvers = {
 				});
 				return firstProposer.save();
 			} 
+			//CurrentBidin "nullaus"
+			await Bid.deleteOne();
 			//Saa luvun, josta selvitetään kelpoisuus
 			const isOk = (luku) =>{
-				let target = luku<10 ? luku+1 : 1;	//targetin pitää olla joukkueiden määrä-1
+				let target = luku<12 ? luku+1 : 1;	//targetin pitää olla joukkueiden määrä-1
 				while(target<20){	//Luku vapaa kunhan enemmän kuin joukkueiden määrä
 					const team = teams.filter(t => t.place===target);
-					if(team[0].players.length<2){		//Tähän joukkueiden maksimirosterikoko
+					if(team[0].players.length<19){		//Tähän joukkueiden maksimirosterikoko 
 						break;
 					}
-					target = target<10 ? target+1 : 1; //targetin pitää olla joukkueiden määrä-1
+					target = target<12 ? target+1 : 1; //targetin pitää olla joukkueiden määrä-1
 				}
 				return(target);
 
 			};
 			const thisWillBeSaved = isOk(current.proposer);
 
-			if (thisWillBeSaved<11){				//Tähän joukkueiden määrä+1
+			if (thisWillBeSaved<13){				//Tähän joukkueiden määrä+1
 				const next = thisWillBeSaved;
 
 				return Turn.findByIdAndUpdate(current._id, {proposer: next});
