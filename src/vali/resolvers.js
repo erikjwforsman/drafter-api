@@ -52,7 +52,8 @@ const resolvers = {
 		addTeam: async(root, args) => {
 			const team = new Team({
 				owner: args.owner,
-				place: args.place
+				place: args.place,
+				salary:0
 			});
 			return team.save();
 		},
@@ -66,10 +67,20 @@ const resolvers = {
 				price: args.price,
 				oldId: args.oldId,
 				bye: args.bye
+
 			});
-
+			
 			await soldPlayer.save();
-
+			console.log(buyer);
+			console.log(buyer.salary);
+			// if(buyer.salary===undefined){
+			// 	console.log("Löytyi");
+			// 	buyer.salary=args.price;
+			// 	console.log(buyer);
+			// } else {
+			// 	buyer.salary=(buyer.salary+args.price);
+			// }
+			buyer.salary=(buyer.salary+args.price);
 			buyer.players.push(soldPlayer);
 			// return buyer.save(); testi alkaa
 			buyer.save();

@@ -14,6 +14,7 @@ const typeDefs = gql`
     type Team {
         owner: String!
         place: Int
+        salary: Int
         players: [SoldPlayer]
         id:ID!
     }
