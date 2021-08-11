@@ -6,7 +6,8 @@ const schema = new mongoose.Schema({
 	rank: Number,
 	expectedValue: Number,
 	position: String,
-	bye: Number
+	bye: Number,
+	injury: String
 });
 
 module.exports = mongoose.model("Player", schema);

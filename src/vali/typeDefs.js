@@ -8,6 +8,7 @@ const typeDefs = gql`
         expectedValue: Int!
         position: String!
         bye: Int!
+        injury: String
         id:ID!
     }
 
@@ -56,6 +57,7 @@ const typeDefs = gql`
             rank: Int!
             expectedValue: Int!
             position: String!
+            injury: String
             bye: Int!
         ):Player
 
@@ -78,12 +80,20 @@ const typeDefs = gql`
             current: Int
         ):Turn
 
+        nullPropser:Turn
+
+        nullAll:Turn
+
         changeBid(
             bidder: String!
             playerId: String!
             currentPrice: Int
             timeLeft: String
         ):Bid
+    }
+
+    type Subscription{
+        changeProposer: Turn
     }
     
 `;

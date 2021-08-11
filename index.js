@@ -33,6 +33,24 @@ server.applyMiddleware({ app, path:"/" });
 
 const PORT = process.env.PORT || 4000;
 
+//OG KOODI
 app.listen(PORT, () =>
 	console.log("🚀 Server ready"));
 
+// app.listen(PORT, () =>
+// 	console.log(`🚀 Server ready at ${PORT}`));
+
+// app.listen(PORT).then(({ url, subscriptionsUrl }) => {
+// 	console.log(`Server ready at ${url}`);
+// 	console.log(`Subscriptions ready at ${subscriptionsUrl}`);
+// });
+
+// app.listen(PORT).then(({ url, subscriptionsUrl }) => {
+// 	console.log(`Server ready at ${url}`);
+// 	console.log(`Subscriptions ready at ${subscriptionsUrl}`);
+// });
+
+// app.listen(PORT).then(({ url, subscriptionsUrl }) => {
+// 	console.log(`Server ready at ${url}`);
+// 	console.log(`Subscriptions ready at ${subscriptionsUrl}`);
+// });

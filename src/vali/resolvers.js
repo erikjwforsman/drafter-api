@@ -1,4 +1,6 @@
 //const mongoose = require("mongoose");
+// const { PubSub } = require("apollo-server");
+// const pubsub = new PubSub();
 
 const Player = require("../models/player");
 const SoldPlayer = require("../models/soldPlayer");
@@ -44,7 +46,8 @@ const resolvers = {
 				rank: args.rank,
 				expectedValue: args.expectedValue,
 				position: args.position,
-				bye: args.bye
+				bye: args.bye,
+				injury: args.injury
 			});
 			player.save();
 			return player;
@@ -95,12 +98,14 @@ const resolvers = {
 			}
 			let current = await Turn.findOne();
 			const teams = await Team.find({});
-
+			console.log("Alkuperäinen", current);
 			if(current === null){
 				const firstProposer = new Turn ({
 					proposer: 1
 				});
 				return firstProposer.save();
+				//pubsub.publish("CHANGE_PROPOSER", {changeProposer: firstProposer});
+				//return firstProposer;
 			} 
 			//CurrentBidin "nullaus"
 			await Bid.deleteOne();
@@ -119,19 +124,65 @@ const resolvers = {
 			};
 			const thisWillBeSaved = isOk(current.proposer);
 
-			if (thisWillBeSaved<13){				//Tähän joukkueiden määrä+1
+			if (thisWillBeSaved<14){				//Tähän joukkueiden määrä+1
 				const next = thisWillBeSaved;
-
+				// console.log(current);
+				// let newbie = current;
+				// console.log(newbie);
+				// newbie.proposer=next;
+				// console.log("new newbie",newbie);
+				// pubsub.publish("CHANGE_PROPOSER", {changeProposer: newbie});
 				return Turn.findByIdAndUpdate(current._id, {proposer: next});
+				// const retTurn = await Turn.findOne();
+				// console.log("Lopullinen",retTurn);
+				// return retTurn;
+
+				// const retTurn = await Turn.findOne();
+				// pubsub.publish("CHANGE_PROPOSER", {changeProposer: retTurn});
+				// return retTurn;
+
 			} 
 			//console.log()
+			// console.log(current);
+			// console.log("Tähän asti päästiin");
 			return Turn.findByIdAndUpdate(current._id, {proposer: 1});
+			// console.log("Jatkuu yhä");
+			// const retTurn = await Turn.findOne();
+			// console.log("Lopullinen",retTurn);
+			// return retTurn;
+			// pubsub.publish("CHANGE_PROPOSER", {changeProposer: retTurn});
+			// return retTurn;
 			
 			
 		},
+
+		nullPropser: async() => {
+			await Bid.deleteOne();
+			await Turn.deleteOne();
+			return null;
+		},
+
+		nullAll: async() => {
+			//Poistetaan pelaajat joukkueista
+			const teams = await Team.find();
+			for (const t in teams){
+				teams[t].salary=0;
+				teams[t].players=[];
+				const retTeam = teams[t];
+				await Team.findByIdAndUpdate(teams[t]._id, retTeam);
+			}
+			//Poistetaa kaikki myydyt pelaajat
+			await SoldPlayer.remove({});
+
+			await Bid.deleteOne();
+			await Turn.deleteOne();
+			return null;
+		},
+
 		changeBid: async(root, args) => {
 			console.log("ALKAAAA");
 			let current = await Bid.findOne();
+
 			//Huutokaupan ensimmäinen tarjous
 			if(current === null){
 				
@@ -157,6 +208,12 @@ const resolvers = {
 			//PITÄÄKÖ TEHDÄ ERILLINEN NULLAUS??
 			//
 			
+			//Lopettaa virheellisen tarjouksen tarkistamisen
+			if (current.currentPrice>=args.currentPrice){
+				console.log("Tarhousvirhe!");
+				return current;
+			}
+
 			//Jo myynnissä oleva pelaaja
 			//Nostaa ajan tarjouksen jälkeen 10 sekuntiin, jos olisi muuten alle
 			let newTime = Number(current.timeLeft);
@@ -169,7 +226,13 @@ const resolvers = {
 			console.log(current);
 			return current;	//vaihda takaisin Bid.findBy... palautukseen
 		}
-	}
+	},
+	// Subscription:{
+	// 	changeProposer: {
+	// 		subscribe: () => pubsub.asyncIterator(["CHANGE_PROPOSER"])
+	// 	}
+	// }
+
 };
 
 module.exports = resolvers;
