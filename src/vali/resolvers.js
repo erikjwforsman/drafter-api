@@ -101,7 +101,8 @@ const resolvers = {
 			console.log("Alkuperäinen", current);
 			if(current === null){
 				const firstProposer = new Turn ({
-					proposer: 1
+					proposer: 1,
+					timeLeft: String(Date.now()+30000)
 				});
 				return firstProposer.save();
 				//pubsub.publish("CHANGE_PROPOSER", {changeProposer: firstProposer});
@@ -132,7 +133,7 @@ const resolvers = {
 				// newbie.proposer=next;
 				// console.log("new newbie",newbie);
 				// pubsub.publish("CHANGE_PROPOSER", {changeProposer: newbie});
-				return Turn.findByIdAndUpdate(current._id, {proposer: next});
+				return Turn.findByIdAndUpdate(current._id, {proposer: next, timeLeft: String(Date.now()+30000)});
 				// const retTurn = await Turn.findOne();
 				// console.log("Lopullinen",retTurn);
 				// return retTurn;
@@ -145,7 +146,7 @@ const resolvers = {
 			//console.log()
 			// console.log(current);
 			// console.log("Tähän asti päästiin");
-			return Turn.findByIdAndUpdate(current._id, {proposer: 1});
+			return Turn.findByIdAndUpdate(current._id, {proposer: 1, timeLeft: String(Date.now()+30000)});
 			// console.log("Jatkuu yhä");
 			// const retTurn = await Turn.findOne();
 			// console.log("Lopullinen",retTurn);

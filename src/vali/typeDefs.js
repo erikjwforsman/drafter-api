@@ -40,6 +40,7 @@ const typeDefs = gql`
 
     type Turn{
         proposer: Int!
+        timeLeft: String
     }
 
     type Query{
@@ -78,6 +79,7 @@ const typeDefs = gql`
 
         changeProposer(
             current: Int
+            timeLeft: String
         ):Turn
 
         nullPropser:Turn
