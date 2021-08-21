@@ -1,7 +1,3 @@
-//const mongoose = require("mongoose");
-// const { PubSub } = require("apollo-server");
-// const pubsub = new PubSub();
-
 const Player = require("../models/player");
 const SoldPlayer = require("../models/soldPlayer");
 const Team = require("../models/team");
@@ -15,7 +11,7 @@ const resolvers = {
 		allTeams: async (root, args) => Team.find({}).populate("players"),
 		allSoldPlayers: () => SoldPlayer.find({}),
 		lastProposer: () => Turn.findOne(),
-		currentBid: () => Bid.findOne() //Rakennetaan vielä pelaajan tulostus
+		currentBid: () => Bid.findOne() 
 	},
 
 	Team: {
@@ -33,7 +29,6 @@ const resolvers = {
 
 	Bid: {
 		player: async(root) => {
-			//const retPlayer = await Player.findOne({_id:root.player});//
 			return await Player.findOne({_id:root.player}); 
 		}
 	},
@@ -73,88 +68,53 @@ const resolvers = {
 
 			});
 			
-			await soldPlayer.save();
-			console.log(buyer);
-			console.log(buyer.salary);
-			// if(buyer.salary===undefined){
-			// 	console.log("Löytyi");
-			// 	buyer.salary=args.price;
-			// 	console.log(buyer);
-			// } else {
-			// 	buyer.salary=(buyer.salary+args.price);
-			// }
+			await soldPlayer.save();		
 			buyer.salary=(buyer.salary+args.price);
 			buyer.players.push(soldPlayer);
-			// return buyer.save(); testi alkaa
+
 			buyer.save();
 			return soldPlayer;
             
 		},
-		changeProposer: async(root, args) => { //Pitääkö olla root?
-			
-
-			if (args){
-				console.log(args);
-			}
+		changeProposer: async() => { 
 			let current = await Turn.findOne();
 			const teams = await Team.find({});
-			console.log("Alkuperäinen", current);
+			const numberOfTeams = 13;
+			const rosterSize = 19;
+
 			if(current === null){
 				const firstProposer = new Turn ({
 					proposer: 1,
-					timeLeft: String(Date.now()+30000)
 				});
 				return firstProposer.save();
-				//pubsub.publish("CHANGE_PROPOSER", {changeProposer: firstProposer});
-				//return firstProposer;
 			} 
+
 			//CurrentBidin "nullaus"
 			await Bid.deleteOne();
-			//Saa luvun, josta selvitetään kelpoisuus
+
+			//Saa luvun, josta selvitetään ehdotuskelpoisuus
 			const isOk = (luku) =>{
-				let target = luku<12 ? luku+1 : 1;	//targetin pitää olla joukkueiden määrä-1
-				while(target<20){	//Luku vapaa kunhan enemmän kuin joukkueiden määrä
-					const team = teams.filter(t => t.place===target);
-					if(team[0].players.length<19){		//Tähän joukkueiden maksimirosterikoko 
+				//Selvittää voiko tämän vuoroinen ehdottaa => muuten vuoro seuraavalle, jos nykyinen on viimeinen => Vuoro ensimmäiselle
+				//Luku on viimeeksi ehdottaneen tunnsistenumero, josta aletaan edetä
+				let target = luku<numberOfTeams ? luku+1 : 1;	//tarkistaa onko nyk ehdottaja arrayn viimeinen => jos on niin aloitetaan alusta
+				while(target<200){	//Luku vapaa kunhan enemmän kuin joukkueiden määrä
+					const team = teams.filter(t => t.place===target); //Voi kirjoittaa myös findilla ilman arrayta
+					if(team[0].players.length<rosterSize){		//Selvittää onko joukkueessa vähemmän pelaajia kuin on sallittu, jos on, joukkue saa ehdottaa
 						break;
 					}
-					target = target<12 ? target+1 : 1; //targetin pitää olla joukkueiden määrä-1
+					target = target<numberOfTeams ? target+1 : 1; //Ed. joukkueessa oli maksimimäärä pelaajia => tarkastetaan seuraava (jos array täynnä, aloitetaan ensimmäisestä)
 				}
 				return(target);
 
 			};
 			const thisWillBeSaved = isOk(current.proposer);
 
-			if (thisWillBeSaved<14){				//Tähän joukkueiden määrä+1
+			if (thisWillBeSaved<(numberOfTeams+1)){				//Tähän joukkueiden määrä+1
 				const next = thisWillBeSaved;
-				// console.log(current);
-				// let newbie = current;
-				// console.log(newbie);
-				// newbie.proposer=next;
-				// console.log("new newbie",newbie);
-				// pubsub.publish("CHANGE_PROPOSER", {changeProposer: newbie});
-				return Turn.findByIdAndUpdate(current._id, {proposer: next, timeLeft: String(Date.now()+30000)});
-				// const retTurn = await Turn.findOne();
-				// console.log("Lopullinen",retTurn);
-				// return retTurn;
-
-				// const retTurn = await Turn.findOne();
-				// pubsub.publish("CHANGE_PROPOSER", {changeProposer: retTurn});
-				// return retTurn;
-
+				return Turn.findByIdAndUpdate(current._id, {proposer: next});
 			} 
-			//console.log()
-			// console.log(current);
-			// console.log("Tähän asti päästiin");
-			return Turn.findByIdAndUpdate(current._id, {proposer: 1, timeLeft: String(Date.now()+30000)});
-			// console.log("Jatkuu yhä");
-			// const retTurn = await Turn.findOne();
-			// console.log("Lopullinen",retTurn);
-			// return retTurn;
-			// pubsub.publish("CHANGE_PROPOSER", {changeProposer: retTurn});
-			// return retTurn;
-			
-			
+
+			return Turn.findByIdAndUpdate(current._id, {proposer: 1});	
 		},
 
 		nullPropser: async() => {
@@ -181,12 +141,10 @@ const resolvers = {
 		},
 
 		changeBid: async(root, args) => {
-			console.log("ALKAAAA");
 			let current = await Bid.findOne();
 
 			//Huutokaupan ensimmäinen tarjous
-			if(current === null){
-				
+			if(current === null){				
 				const biddedPlayer = new Bid({
 					bidder: args.bidder,
 					player: await Player.findOne({_id:args.playerId}),
@@ -199,8 +157,6 @@ const resolvers = {
 			//Tarjoaminen uudesta pelaajasta alkaa
 			if( String(current.player)!==args.playerId ){ //Current palaa objectina, ongelma?
 				const player = await Player.findOne({_id:args.playerId});
-				
-				console.log("aktiivinen");
 				return Bid.findByIdAndUpdate(current._id, { bidder: args.bidder, currentPrice: 1, timeLeft:String(Date.now()+30000), player:player } );
 			} 
 			
@@ -211,16 +167,14 @@ const resolvers = {
 			
 			//Lopettaa virheellisen tarjouksen tarkistamisen
 			if (current.currentPrice>=args.currentPrice){
-				console.log("Tarhousvirhe!");
 				return current;
 			}
 
 			//Jo myynnissä oleva pelaaja
-			//Nostaa ajan tarjouksen jälkeen 10 sekuntiin, jos olisi muuten alle
+			//Nostaa ajan tarjouksen jälkeen n. 10 sekuntiin, jos olisi muuten alle (käsitellään 12000, koska viive)
 			let newTime = Number(current.timeLeft);
 			if (newTime-Date.now()<10000){
-				console.log("Kiirettä pitää, Nostetaan kymppiin");
-				newTime=Date.now()+10000;
+				newTime=Date.now()+12000;
 			}
 
 			await Bid.findByIdAndUpdate(current._id, {bidder: args.bidder, currentPrice: args.currentPrice, timeLeft:String(newTime)});
@@ -228,12 +182,6 @@ const resolvers = {
 			return current;	//vaihda takaisin Bid.findBy... palautukseen
 		}
 	},
-	// Subscription:{
-	// 	changeProposer: {
-	// 		subscribe: () => pubsub.asyncIterator(["CHANGE_PROPOSER"])
-	// 	}
-	// }
-
 };
 
 module.exports = resolvers;

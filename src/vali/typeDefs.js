@@ -40,7 +40,6 @@ const typeDefs = gql`
 
     type Turn{
         proposer: Int!
-        timeLeft: String
     }
 
     type Query{
@@ -77,10 +76,7 @@ const typeDefs = gql`
             bye: Int!
         ):SoldPlayer
 
-        changeProposer(
-            current: Int
-            timeLeft: String
-        ):Turn
+        changeProposer:Turn
 
         nullPropser:Turn
 
@@ -93,45 +89,6 @@ const typeDefs = gql`
             timeLeft: String
         ):Bid
     }
-
-    type Subscription{
-        changeProposer: Turn
-    }
-    
 `;
 
 module.exports = typeDefs;
-
-{/*
-    type SoldPlayer {
-        playerName: String!
-	    nflTeam: String!
-        position: String!
-        owner: Team!
-        price: Int!
-        id:ID!
-    }
-
-    type Team {
-        owner: String!
-        players: [SoldPlayer!]!
-        id:ID!
-    }
-
-
-
-
-       addSoldPlayer(
-            playerName: String!
-            nflTeam: String!
-            position: String!
-            owner: Team!
-            price: Int!
-        ):SoldPlayer
-
-
-        changeTurn(
-            currentProposer: String!
-        ):Turn
-       
-*/}
