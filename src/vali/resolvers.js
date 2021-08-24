@@ -1,8 +1,16 @@
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+//const mongoose = require("mongoose");
+
 const Player = require("../models/player");
 const SoldPlayer = require("../models/soldPlayer");
 const Team = require("../models/team");
 const Turn = require("../models/turn");
 const Bid = require("../models/bid");
+
+const JWT_SECRET = process.env.JWT_SECRET;
+
 
 const resolvers = {
 	Query: {
@@ -34,6 +42,22 @@ const resolvers = {
 	},
 
 	Mutation: {
+		login: async(root, args) => {
+			const user = await Team.findOne({owner: args.owner});
+			const passwordCorrect = user === null ? false : await bcrypt.compare(args.password, user.passwordHash);
+
+			if ( !(user && passwordCorrect) ) {
+				console.log("Wrong credentials");
+				return null;
+			}
+
+			const userForToken = {
+				owner: user.owner,
+				id: user._id
+			};
+
+			return {value: jwt.sign(userForToken, JWT_SECRET)};
+		},
 		addPlayer: async(root, args) => {
 			const player = new Player({
 				playerName: args.playerName,
@@ -48,11 +72,17 @@ const resolvers = {
 			return player;
 		},
 		addTeam: async(root, args) => {
+			//Hash luodaan täällä
+			const saltRounds = 10;
+			const passwordHash = await bcrypt.hash(args.password, saltRounds);
+
 			const team = new Team({
 				owner: args.owner,
 				place: args.place,
+				passwordHash: passwordHash, //EI mene näin
 				salary:0
 			});
+			console.log(team);
 			return team.save();
 		},
 		addSoldPlayer: async(root, args) => {

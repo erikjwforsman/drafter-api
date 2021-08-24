@@ -4,6 +4,7 @@ const schema = new mongoose.Schema({
 	owner: String,
 	place: Number,
 	salary: Number,
+	passwordHash: String,
 	players: [{
 		type: mongoose.Schema.Types.ObjectId,
 		ref: "SoldPlayer"

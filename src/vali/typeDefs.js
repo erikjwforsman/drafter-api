@@ -17,7 +17,12 @@ const typeDefs = gql`
         place: Int
         salary: Int
         players: [SoldPlayer]
+        passwordHash: String
         id:ID!
+    }
+
+    type Token {
+        value: String!
     }
 
     type SoldPlayer {
@@ -48,9 +53,15 @@ const typeDefs = gql`
         allSoldPlayers: [SoldPlayer!]!
         lastProposer: Turn
         currentBid: Bid
+        me: Team
     }
 
     type Mutation{
+        login(
+            owner: String
+            password: String
+        ): Token
+
         addPlayer(
             playerName: String!
             nflTeam: String!
@@ -63,6 +74,7 @@ const typeDefs = gql`
 
         addTeam(
             owner: String!
+            password: String
             place: Int
         ):Team
 

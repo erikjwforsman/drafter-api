@@ -2,16 +2,15 @@ const express = require("express");
 const { ApolloServer} = require("apollo-server-express");
 const mongoose = require("mongoose");
 require("dotenv").config();
+const cors = require("cors");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
+const Team = require("./src/models/team");
 
 const url = process.env.MONGODB_URI;
 
-// const Player = require("./src/models/player");
-// const SoldPlayer = require("./src/models/soldPlayer");
-// const Team = require("./src/models/team");
-
 const typeDefs = require("./src/vali/typeDefs");
 const resolvers = require("./src/vali/resolvers");
-
 
 console.log("connecting to Mongo");
 mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true })
@@ -22,35 +21,30 @@ mongoose.connect(url, { useNewUrlParser: true, useUnifiedTopology: true, useFind
 		console.log("error connection to MongoDB: ", error.message);
 	});
 
+const JWT_SECRET = process.env.JWT_SECRET;
+
 const app = express();
 
 const server = new ApolloServer({
 	typeDefs,
-	resolvers
+	resolvers,
+	context: async({req}) => {
+		const auth = req ? req.headers.authorization : null;
+		if (auth && auth.toLowerCase().startsWith("bearer")) {
+			const decodedToken = jwt.verify(
+				auth.substring(7), JWT_SECRET
+			);
+			const currentUser = await Team.findById(decodedToken);
+			return {currentUser};
+		}
+	}
 });
-
+app.use(cors());
 server.applyMiddleware({ app, path:"/" });
 
 const PORT = process.env.PORT || 4000;
 
-//OG KOODI
 app.listen(PORT, () =>
 	console.log("🚀 Server ready"));
 
-// app.listen(PORT, () =>
-// 	console.log(`🚀 Server ready at ${PORT}`));
 
-// app.listen(PORT).then(({ url, subscriptionsUrl }) => {
-// 	console.log(`Server ready at ${url}`);
-// 	console.log(`Subscriptions ready at ${subscriptionsUrl}`);
-// });
-
-// app.listen(PORT).then(({ url, subscriptionsUrl }) => {
-// 	console.log(`Server ready at ${url}`);
-// 	console.log(`Subscriptions ready at ${subscriptionsUrl}`);
-// });
-
-// app.listen(PORT).then(({ url, subscriptionsUrl }) => {
-// 	console.log(`Server ready at ${url}`);
-// 	console.log(`Subscriptions ready at ${subscriptionsUrl}`);
-// });
