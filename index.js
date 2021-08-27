@@ -2,13 +2,13 @@ const express = require("express");
 const { ApolloServer} = require("apollo-server-express");
 const mongoose = require("mongoose");
 require("dotenv").config();
-const cors = require("cors");
 const jwt = require("jsonwebtoken");
-require("dotenv").config();
+const cors = require("cors");
+const path = require("path");
+
 const Team = require("./src/models/team");
 
 const url = process.env.MONGODB_URI;
-const path = require("path");
 const typeDefs = require("./src/vali/typeDefs");
 const resolvers = require("./src/vali/resolvers");
 
