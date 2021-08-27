@@ -8,7 +8,7 @@ require("dotenv").config();
 const Team = require("./src/models/team");
 
 const url = process.env.MONGODB_URI;
-const path = require("path");
+// const path = require("path");
 const typeDefs = require("./src/vali/typeDefs");
 const resolvers = require("./src/vali/resolvers");
 
@@ -41,9 +41,9 @@ const server = new ApolloServer({
 });
 app.use(express.static("build"));
 
-app.get("*", (req, res) => {
-	res.sendFile(path.resolve(__dirname, "build", "index.html"));
-});
+// app.get("*", (req, res) => {
+// 	res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
 
 
 app.use(cors());
