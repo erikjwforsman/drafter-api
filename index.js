@@ -34,7 +34,7 @@ const server = new ApolloServer({
 			const decodedToken = jwt.verify(
 				auth.substring(7), JWT_SECRET
 			);
-			const currentUser = await Team.findById(decodedToken);
+			const currentUser = await Team.findById(decodedToken.id);
 			return {currentUser};
 		}
 	}
