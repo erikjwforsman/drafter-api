@@ -172,7 +172,7 @@ const resolvers = {
 
 		changeBid: async(root, args) => {
 			let current = await Bid.findOne();
-
+			
 			//Huutokaupan ensimmäinen tarjous
 			if(current === null){				
 				const biddedPlayer = new Bid({
@@ -181,15 +181,25 @@ const resolvers = {
 					currentPrice: 1,
 					timeLeft: String(Date.now()+30000)
 				});
+				console.log(biddedPlayer);
+				if(biddedPlayer.currentPrice===null){
+					biddedPlayer.currentPrice=1;
+				}
+				console.log(biddedPlayer);
 				return biddedPlayer.save();
 			}
 			
 			//Tarjoaminen uudesta pelaajasta alkaa
 			if( String(current.player)!==args.playerId ){ //Current palaa objectina, ongelma?
 				const player = await Player.findOne({_id:args.playerId});
+				console.log(player);
+				if(player.currentPrice===null){
+					player.currentPrice=1;
+				}
+				console.log(player);
 				return Bid.findByIdAndUpdate(current._id, { bidder: args.bidder, currentPrice: 1, timeLeft:String(Date.now()+30000), player:player } );
 			} 
-			
+			//
 
 			//
 			//PITÄÄKÖ TEHDÄ ERILLINEN NULLAUS??
