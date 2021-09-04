@@ -4,7 +4,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
-const path = require("path");
+// const path = require("path");
 
 const Team = require("./src/models/team");
 
@@ -39,11 +39,11 @@ const server = new ApolloServer({
 		}
 	}
 });
-app.use(express.static("build"));
+// app.use(express.static("build"));
 
-app.get("*", (req, res) => {
-	res.sendFile(path.resolve(__dirname, "build", "index.html"));
-});
+// app.get("*", (req, res) => {
+// 	res.sendFile(path.resolve(__dirname, "build", "index.html"));
+// });
 
 
 app.use(cors());
